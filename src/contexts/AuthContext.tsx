@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { Session } from '@supabase/supabase-js'
+import { Session, User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 export interface UserProfile {
@@ -28,24 +28,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
+    const bootstrapAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
 
-      if (session?.user) {
-        await fetchProfile(session.user)
-      } else {
+        if (session?.user) {
+          await fetchProfile(session.user)
+        } else {
+          setUser(null)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar sessão:', error)
         setUser(null)
+      } finally {
         setIsLoading(false)
       }
-    })
+    }
+
+    bootstrapAuth()
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
 
       if (session?.user) {
-        await fetchProfile(session.user)
+        setTimeout(() => {
+          fetchProfile(session.user)
+        }, 0)
       } else {
         setUser(null)
         setIsLoading(false)
@@ -55,8 +66,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchProfile = async (authUser: Session['user']) => {
+  const fetchProfile = async (authUser: SupabaseUser) => {
     try {
+      setIsLoading(true)
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -153,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setSession(null)
+    setIsLoading(false)
   }
 
   return (
