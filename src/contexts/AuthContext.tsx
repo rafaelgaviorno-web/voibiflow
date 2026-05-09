@@ -28,19 +28,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session)
+
       if (session?.user) {
-        fetchProfile(session.user.id)
+        await fetchProfile(session.user)
       } else {
+        setUser(null)
         setIsLoading(false)
       }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session)
+
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        await fetchProfile(session.user)
       } else {
         setUser(null)
         setIsLoading(false)
@@ -50,14 +55,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (authUser: Session['user']) => {
     try {
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle()
+
       if (error) throw error
-      setUser(data as UserProfile)
+
+      if (data) {
+        setUser(data as UserProfile)
+        return
+      }
+
+      const fallbackProfile: UserProfile = {
+        id: authUser.id,
+        email: authUser.email || '',
+        name:
+          authUser.user_metadata?.name ||
+          authUser.user_metadata?.full_name ||
+          authUser.email?.split('@')[0] ||
+          'Usuário',
+        avatar_url: authUser.user_metadata?.avatar_url,
+        created_at: authUser.created_at || new Date().toISOString(),
+      }
+
+      setUser(fallbackProfile)
+
+      const { error: upsertError } = await supabase.from('profiles').upsert({
+        id: fallbackProfile.id,
+        email: fallbackProfile.email,
+        name: fallbackProfile.name,
+        avatar_url: fallbackProfile.avatar_url || null,
+      })
+
+      if (upsertError) {
+        console.error('Erro ao criar perfil automaticamente:', upsertError)
+      }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error)
-      setUser(null)
+
+      const fallbackProfile: UserProfile = {
+        id: authUser.id,
+        email: authUser.email || '',
+        name:
+          authUser.user_metadata?.name ||
+          authUser.user_metadata?.full_name ||
+          authUser.email?.split('@')[0] ||
+          'Usuário',
+        avatar_url: authUser.user_metadata?.avatar_url,
+        created_at: authUser.created_at || new Date().toISOString(),
+      }
+
+      setUser(fallbackProfile)
     } finally {
       setIsLoading(false)
     }
@@ -66,7 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) return { success: false, error: translateError(error.message) }
+
+      if (error) {
+        return { success: false, error: translateError(error.message) }
+      }
+
       return { success: true }
     } catch (error) {
       return { success: false, error: 'Erro ao fazer login' }
@@ -78,9 +134,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name } },
+        options: {
+          data: { name },
+        },
       })
-      if (error) return { success: false, error: translateError(error.message) }
+
+      if (error) {
+        return { success: false, error: translateError(error.message) }
+      }
+
       return { success: true }
     } catch (error) {
       return { success: false, error: 'Erro ao criar conta' }
@@ -94,7 +156,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, isAuthenticated: !!user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        isAuthenticated: !!session?.user,
+        isLoading,
+        login,
+        signup,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
@@ -114,5 +186,6 @@ function translateError(message: string): string {
     'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres',
     'Invalid email': 'Email inválido',
   }
+
   return errors[message] || message
 }
