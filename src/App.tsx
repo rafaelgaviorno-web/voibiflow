@@ -78,15 +78,12 @@ function Dashboard({ user, onLogout }: DashboardProps) {
         <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="fixed inset-0 pointer-events-none opacity-10"
-        style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(16, 185, 129, 0.3) 1px, transparent 0)', backgroundSize: '32px 32px' }}
-      />
+      <div className="fixed inset-0 pointer-events-none opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(16, 185, 129, 0.3) 1px, transparent 0)', backgroundSize: '32px 32px' }} />
 
       <div className="relative flex flex-col h-screen">
         <header className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-slate-800/50 bg-slate-900/50 backdrop-blur-xl z-40">
           <div className="flex items-center gap-3">
-            <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <motion.div whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }} className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <WorkflowIcon className="w-5 h-5 text-white" />
             </motion.div>
             <div>
@@ -107,27 +104,19 @@ function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
             </div>
 
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setShowLogs(!showLogs)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${showLogs ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600'}`}>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowLogs(!showLogs)} className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${showLogs ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600'}`}>
               <History className="w-4 h-4" />
               <span className="hidden sm:inline">Histórico</span>
-              {executionLogs.length > 0 && (
-                <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs flex items-center justify-center">{executionLogs.length}</span>
-              )}
+              {executionLogs.length > 0 && <span className="w-5 h-5 rounded-full bg-cyan-500/20 text-cyan-400 text-xs flex items-center justify-center">{executionLogs.length}</span>}
             </motion.button>
 
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-medium shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all">
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-medium shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Novo Fluxo</span>
             </motion.button>
 
             <div className="relative">
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all">
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setShowUserMenu(!showUserMenu)} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">{user.name.charAt(0).toUpperCase()}</span>
                 </div>
@@ -136,14 +125,12 @@ function Dashboard({ user, onLogout }: DashboardProps) {
 
               <AnimatePresence>
                 {showUserMenu && (
-                  <motion.div initial={{ opacity: 0, scale: 0.95, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                    className="absolute right-0 top-full mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <motion.div initial={{ opacity: 0, scale: 0.95, y: -10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -10 }} className="absolute right-0 top-full mt-2 w-56 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
                     <div className="p-4 border-b border-slate-700">
                       <p className="font-medium text-white">{user.name}</p>
                       <p className="text-sm text-slate-400">{user.email}</p>
                     </div>
-                    <button onClick={() => { setShowUserMenu(false); onLogout(); }}
-                      className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors">
+                    <button onClick={() => { setShowUserMenu(false); onLogout(); }} className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors">
                       <LogOut className="w-4 h-4" /> Sair
                     </button>
                   </motion.div>
@@ -160,8 +147,7 @@ function Dashboard({ user, onLogout }: DashboardProps) {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full" />
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full" />
             </div>
           ) : workflows.length === 0 ? (
             <EmptyWorkflows onAddClick={() => setShowAddModal(true)} />
@@ -176,9 +162,7 @@ function Dashboard({ user, onLogout }: DashboardProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence mode="popLayout">
                   {workflows.map((workflow) => (
-                    <WorkflowCard key={workflow.id} workflow={workflow} isTriggering={triggeringWorkflowId === workflow.id}
-                      onTrigger={() => triggerWorkflow(workflow)} onEdit={() => handleEdit(workflow)}
-                      onDelete={() => deleteWorkflow(workflow.id)} onToggleActive={() => toggleWorkflowActive(workflow.id)} />
+                    <WorkflowCard key={workflow.id} workflow={workflow} isTriggering={triggeringWorkflowId === workflow.id} onTrigger={() => triggerWorkflow(workflow)} onEdit={() => handleEdit(workflow)} onDelete={() => deleteWorkflow(workflow.id)} onToggleActive={() => toggleWorkflowActive(workflow.id)} />
                   ))}
                 </AnimatePresence>
               </div>
@@ -207,17 +191,3 @@ function App() {
 }
 
 export default App
-Crie esses 3 arquivos e me avisa que continuo com os próximos!
-
-Enviar uma edição para GLM 5...
-
-
-
-Prévia
-Código
-https://nexusai-chat-r1gt.arcada.app
-
-
-
-
-Publicar
