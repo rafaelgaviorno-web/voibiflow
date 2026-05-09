@@ -72,7 +72,6 @@ export function AddWorkflowModal({ isOpen, onClose, onAdd, editWorkflow, onUpdat
         })
 
         if (!result) {
-          setIsSubmitting(false)
           return
         }
       }
@@ -110,7 +109,9 @@ export function AddWorkflowModal({ isOpen, onClose, onAdd, editWorkflow, onUpdat
               style={{ maxHeight: '90vh' }}
             >
               <div className="flex items-center justify-between p-6 border-b border-slate-700 bg-slate-900">
-                <h2 className="text-xl font-semibold text-white">{editWorkflow ? 'Editar Fluxo' : 'Novo Fluxo n8n'}</h2>
+                <h2 className="text-xl font-semibold text-white">
+                  {editWorkflow ? 'Editar Fluxo' : 'Novo Fluxo n8n'}
+                </h2>
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
@@ -211,10 +212,30 @@ export function AddWorkflowModal({ isOpen, onClose, onAdd, editWorkflow, onUpdat
                           type="button"
                           onClick={() => setColor(c)}
                           className={`w-8 h-8 rounded-lg border-2 transition-all ${
-                            color === c ? `border-white scale-110 ${colorClasses[c].bg}` : `border-transparent ${colorClasses[c].bg} hover:scale-105`
+                            color === c
+                              ? `border-white scale-110 ${colorClasses[c].bg}`
+                              : `border-transparent ${colorClasses[c].bg} hover:scale-105`
                           }`}
                         >
-                          <div className={`w-full h-full rounded-md ${c === 'cyan' ? 'bg-cyan-500' : c === 'purple' ? 'bg-purple-500' : c === 'green' ? 'bg-emerald-500' : c === 'orange' ? 'bg-orange-500' : c === 'pink' ? 'bg-pink-500' : c === 'blue' ? 'bg-blue-500' : c === 'red' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+                          <div
+                            className={`w-full h-full rounded-md ${
+                              c === 'cyan'
+                                ? 'bg-cyan-500'
+                                : c === 'purple'
+                                  ? 'bg-purple-500'
+                                  : c === 'green'
+                                    ? 'bg-emerald-500'
+                                    : c === 'orange'
+                                      ? 'bg-orange-500'
+                                      : c === 'pink'
+                                        ? 'bg-pink-500'
+                                        : c === 'blue'
+                                          ? 'bg-blue-500'
+                                          : c === 'red'
+                                            ? 'bg-red-500'
+                                            : 'bg-yellow-500'
+                            }`}
+                          />
                         </button>
                       ))}
                     </div>
