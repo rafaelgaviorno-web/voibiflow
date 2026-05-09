@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { Session, User as SupabaseUser } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 export interface UserProfile {
@@ -28,13 +28,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const bootstrapAuth = async () => {
+    const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         setSession(session)
 
         if (session?.user) {
-          await fetchProfile(session.user)
+          await fetchProfile(session.user.id)
         } else {
           setUser(null)
         }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    bootstrapAuth()
+    initAuth()
 
     const {
       data: { subscription },
@@ -54,8 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session)
 
       if (session?.user) {
+        setIsLoading(true)
         setTimeout(() => {
-          fetchProfile(session.user)
+          fetchProfile(session.user.id)
         }, 0)
       } else {
         setUser(null)
@@ -66,63 +67,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const fetchProfile = async (authUser: SupabaseUser) => {
+  const fetchProfile = async (userId: string) => {
     try {
-      setIsLoading(true)
-
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('id', userId)
         .maybeSingle()
 
       if (error) throw error
 
-      if (data) {
-        setUser(data as UserProfile)
-        return
-      }
-
-      const fallbackProfile: UserProfile = {
-        id: authUser.id,
-        email: authUser.email || '',
-        name:
-          authUser.user_metadata?.name ||
-          authUser.user_metadata?.full_name ||
-          authUser.email?.split('@')[0] ||
-          'Usuário',
-        avatar_url: authUser.user_metadata?.avatar_url,
-        created_at: authUser.created_at || new Date().toISOString(),
-      }
-
-      setUser(fallbackProfile)
-
-      const { error: upsertError } = await supabase.from('profiles').upsert({
-        id: fallbackProfile.id,
-        email: fallbackProfile.email,
-        name: fallbackProfile.name,
-        avatar_url: fallbackProfile.avatar_url || null,
-      })
-
-      if (upsertError) {
-        console.error('Erro ao criar perfil automaticamente:', upsertError)
-      }
+      setUser(data as UserProfile | null)
     } catch (error) {
       console.error('Erro ao buscar perfil:', error)
-
-      const fallbackProfile: UserProfile = {
-        id: authUser.id,
-        email: authUser.email || '',
-        name:
-          authUser.user_metadata?.name ||
-          authUser.user_metadata?.full_name ||
-          authUser.email?.split('@')[0] ||
-          'Usuário',
-        avatar_url: authUser.user_metadata?.avatar_url,
-        created_at: authUser.created_at || new Date().toISOString(),
-      }
-
-      setUser(fallbackProfile)
+      setUser(null)
     } finally {
       setIsLoading(false)
     }
@@ -147,9 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: { name },
-        },
+        options: { data: { name } },
       })
 
       if (error) {
@@ -174,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
-        isAuthenticated: !!session?.user,
+        isAuthenticated: !!user,
         isLoading,
         login,
         signup,
