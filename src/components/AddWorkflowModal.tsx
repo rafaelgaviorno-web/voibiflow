@@ -54,9 +54,9 @@ const colorOptions: WorkflowColor[] = ['cyan', 'purple', 'green', 'orange', 'pin
 interface AddWorkflowModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (workflow: Omit<Workflow, 'id' | 'createdAt' | 'triggerCount' | 'isActive'>) => Promise<any> | any
+  onAdd: (workflow: Omit<Workflow, 'id' | 'createdAt' | 'triggerCount' | 'isActive'>) => Promise<void>
   editWorkflow?: Workflow | null
-  onUpdate?: (id: string, updates: Partial<Workflow>) => Promise<any> | any
+  onUpdate?: (id: string, updates: Partial<Workflow>) => Promise<void>
 }
 
 export function AddWorkflowModal({
@@ -107,18 +107,13 @@ export function AddWorkflowModal({
           color,
         })
       } else {
-        const result = await onAdd({
+        await onAdd({
           name: name.trim(),
           description: description.trim(),
           webhookUrl: webhookUrl.trim(),
           icon,
           color,
         })
-
-        if (!result) {
-          setIsSubmitting(false)
-          return
-        }
       }
 
       setShowSuccess(true)
