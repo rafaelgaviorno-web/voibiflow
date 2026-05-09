@@ -79,60 +79,64 @@ export function useWorkflows() {
     loadData()
   }, [user, loadData])
 
-  const addWorkflow = useCallback(async (workflow: Omit<Workflow, 'id' | 'createdAt' | 'triggerCount' | 'isActive'>) => {
-    if (!user) return null
-
-    try {
-      const { error } = await supabase
-        .from('workflows')
-        .insert({
-          user_id: user.id,
-          name: workflow.name,
-          description: workflow.description,
-          webhook_url: workflow.webhookUrl,
-          icon: workflow.icon,
-          color: workflow.color,
-        })
-
-      if (error) throw error
-
-      await loadData()
-      showToast('success', 'Fluxo criado com sucesso!')
-      return true
-    } catch (error) {
-      console.error('Erro ao criar fluxo:', error)
-      showToast('error', 'Erro ao criar fluxo')
-      return null
+  const addWorkflow = useCallback(async (workflow: Omit<Workflow, 'id' | 'createdAt' | 'triggerCount' | 'isActive'>): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('Usuário não autenticado')
     }
+
+    const payload = {
+      user_id: user.id,
+      name: workflow.name,
+      description: workflow.description,
+      webhook_url: workflow.webhookUrl,
+      icon: workflow.icon,
+      color: workflow.color,
+    }
+
+    console.log('Criando workflow:', payload)
+
+    const { error } = await supabase
+      .from('workflows')
+      .insert(payload)
+
+    if (error) {
+      console.error('Erro Supabase ao criar workflow:', error)
+      showToast('error', 'Erro ao criar fluxo', error.message)
+      throw error
+    }
+
+    await loadData()
+    showToast('success', 'Fluxo criado com sucesso!')
   }, [user, showToast, loadData])
 
-  const updateWorkflow = useCallback(async (id: string, updates: Partial<Workflow>) => {
-    if (!user) return
-
-    try {
-      const dbUpdates: any = {}
-
-      if (updates.name !== undefined) dbUpdates.name = updates.name
-      if (updates.description !== undefined) dbUpdates.description = updates.description
-      if (updates.webhookUrl !== undefined) dbUpdates.webhook_url = updates.webhookUrl
-      if (updates.icon !== undefined) dbUpdates.icon = updates.icon
-      if (updates.color !== undefined) dbUpdates.color = updates.color
-      if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive
-
-      const { error } = await supabase
-        .from('workflows')
-        .update(dbUpdates)
-        .eq('id', id)
-        .eq('user_id', user.id)
-
-      if (error) throw error
-
-      setWorkflows(prev => prev.map(w => (w.id === id ? { ...w, ...updates } : w)))
-      showToast('success', 'Fluxo atualizado!')
-    } catch (error) {
-      console.error('Erro ao atualizar fluxo:', error)
-      showToast('error', 'Erro ao atualizar fluxo')
+  const updateWorkflow = useCallback(async (id: string, updates: Partial<Workflow>): Promise<void> => {
+    if (!user?.id) {
+      throw new Error('Usuário não autenticado')
     }
+
+    const dbUpdates: any = {}
+
+    if (updates.name !== undefined) dbUpdates.name = updates.name
+    if (updates.description !== undefined) dbUpdates.description = updates.description
+    if (updates.webhookUrl !== undefined) dbUpdates.webhook_url = updates.webhookUrl
+    if (updates.icon !== undefined) dbUpdates.icon = updates.icon
+    if (updates.color !== undefined) dbUpdates.color = updates.color
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive
+
+    const { error } = await supabase
+      .from('workflows')
+      .update(dbUpdates)
+      .eq('id', id)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('Erro ao atualizar workflow:', error)
+      showToast('error', 'Erro ao atualizar fluxo', error.message)
+      throw error
+    }
+
+    setWorkflows(prev => prev.map(w => (w.id === id ? { ...w, ...updates } : w)))
+    showToast('success', 'Fluxo atualizado!')
   }, [user, showToast])
 
   const deleteWorkflow = useCallback(async (id: string) => {
